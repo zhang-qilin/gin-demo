@@ -79,9 +79,33 @@ r.Post()
 
 将指定的网络请求重写定个方向，使其跳转到指定的其它位置(网站)
 
+通过重定向来完成网页、网址的自动跳转【可分为：一般重定向 与 路由重定向】
+
+```go
+// 重定向
+// 一般重定向：重定向到外部网络
+	r.GET("/redirect1", func(c *gin.Context) {
+		// 重定向到本人 GitHub 首页，获取到 GitHub 本人首页的数据
+		// 重定向状态码：StatusMovedPermanently
+		url := "https://github.com/zhang-qilin"
+		c.Redirect(http.StatusMovedPermanently,url)
+	})
 
 
-
+// Gin 路由重定向，使用如下的HandleContex
+// 路由重定向：重定向到具体的路由
+	r.GET("/redirect2", func(c *gin.Context) {
+		c.Request.URL.Path="/TestRedirect"
+		r.HandleContext(c)
+	})
+	// 路由：http://localhost:9090/TestRedirect
+	r.GET("/TestRedirect", func(c *gin.Context) {
+		c.JSON(http.StatusOK,gin.H{
+			"code":http.StatusOK,
+			"msg":"响应成功",
+		})
+	})
+```
 
 
 
