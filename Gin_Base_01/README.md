@@ -2,7 +2,7 @@
 
 ## 总体学习流程
 
-![image-20221212211824336](README.assets/image-20221212211824336.png)
+![image-20221212211824336](./README.assets/image-20221212211824336.png)
 
 ## 一、Get 请求
 
