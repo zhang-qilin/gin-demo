@@ -7,6 +7,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	
@@ -15,8 +16,7 @@ import (
 
 func main() {
 	r:= gin.Default()
-	r.GET("/get",getMsg)
-	// err := r.Run("127.0.0.1:9090")
+	r.POST("/post",postMsg)
 	err := r.Run(":9090")
 	if err != nil {
 		log.Fatalln(err)
@@ -24,14 +24,12 @@ func main() {
 	}
 }
 
-func getMsg(c *gin.Context) {
-	name := c.Query("name")
-	// 返回 String 结果容
-	// c.String(http.StatusOK,"欢迎您: %s",name)
-	// 返回 JSON 结果
-	c.JSON(http.StatusOK,gin.H{
-		"code":200,
-		"data":"欢迎您: "+ name,
-		"msg":"返回信息",
-	})
+func postMsg(c *gin.Context) {
+	// name := c.Query("name")  // 获 URL 中的数据
+	name := c.DefaultPostForm("name","老张")
+	fmt.Println(name)
+	form, b := c.GetPostForm("name")
+	fmt.Println(form,b)
+
+	c.JSON(http.StatusOK,"欢迎您: "+name)
 }
