@@ -143,6 +143,144 @@ c.DataFromReader(http.StatusOK, contenLength, contentType, body, extraHeaders)
 
 ```
 
+Deme
+
+```go
+/*
+* @Time ： 2022-12-12 23:03
+* @Auth ： 张齐林
+* @File ：Redirection.go
+* @IDE ：GoLand
+ */
+package main
+
+import (
+	"net/http"
+	
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	r := gin.Default()
+	
+	r.GET("/GetOtherData", func(c *gin.Context) {
+		// url:="https://www.baidu.com"
+		url:="https://avatars.githubusercontent.com/u/53826118?v=4"
+		response, err := http.Get(url)
+		if err != nil || response.StatusCode!= http.StatusOK{
+			c.Status(http.StatusServiceUnavailable)  // 应答 Client
+			return 
+		}
+		body := response.Body
+		contentLength := response.ContentLength
+		contentType := response.Header.Get("Content-Type")
+		// 数据写入响应体
+		c.DataFromReader(http.StatusOK,contentLength,contentType,body,nil)
+	})
+	
+	r.Run(":9090")
+}
+
+```
+
+## 五、多形式渲染
+
+Server 返回 Client 的数据，需要使用到 `Json` 、`HTML`、`XML`  `YAML` 等多种形式 
+
+#### 核心代码
+
+```go
+// 返回 JSON
+c.JSON(http.StatusOK,gin.H{"html":"<b>Hello Gin</b>"})
+
+// 返回输出 HTML
+c.PureJSON(http.StatusOK,gin.H{"html":"<b>Hello Gin</b>"})
+
+// 返回 YAML 形式(YAML 渲染)
+c.YAML(http.StatusOK,gin.H{"message":"hey","status":http.StatusOK})
+
+// 输出 XML 形式
+c.XML(http.StatusOK,data)
+```
+
+Demo
+
+```go
+/*
+* @Time ： 2022-12-12 23:03
+* @Auth ： 张齐林
+* @File ：Redirection.go
+* @IDE ：GoLand
+ */
+package main
+
+import (
+	"net/http"
+	
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	r := gin.Default()
+	
+	// JSON 格式输出
+	r.GET("/json", func(c *gin.Context) {
+		
+		c.JSON(http.StatusOK,gin.H{
+			"html":"<b>Hello Gin</b>",
+		})
+		
+	})
+	// HTML 格式输出
+	r.GET("/someHTML", func(c *gin.Context) {
+		c.PureJSON(http.StatusOK,gin.H{
+			"html":"<b>Hello Gin</b>",
+		})
+	})
+	
+	// XML 格式输出(XML 渲染)
+	r.GET("/someXML", func(c *gin.Context) {
+		type Message struct {
+			Name string
+			Msg string
+			Age int
+		}
+		info := Message{
+			Name: "张齐林",
+			Msg:  "Hello",
+			Age:  88,
+		}
+		c.XML(http.StatusOK,info)
+	})
+	
+	// YAML 格式输出(YAML 渲染)
+	r.GET("/someYAML", func(c  *gin.Context) {
+		c.YAML(http.StatusOK,gin.H{
+			"message":"Gin 框架的多形式渲染",
+			"status":http.StatusOK,
+		})
+	})
+	
+	r.Run(":9090")
+}
+```
+
+## 六、文件服务器
+
+Clien 请求的内容是`视频`、`音频`、`图片` 等文件
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
