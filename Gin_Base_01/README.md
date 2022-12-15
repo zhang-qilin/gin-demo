@@ -91,7 +91,11 @@ r.Post()
 
 将指定的网络请求重写定个方向，使其跳转到指定的其它位置(网站)
 
-通过重定向来完成网页、网址的自动跳转【可分为：一般重定向 与 路由重定向】
+通过重定向来完成网页、网址的自动跳转
+
+可分为：一般重定向 与 路由重定向
+
+#### 核心代码
 
 ```go
 // 重定向
@@ -120,6 +124,24 @@ r.Post()
 ```
 
 
+
+## 四、返回第三方获取的数据
+
+在我们自己开发的 Server 程序时，Client 请求时需要获取第三方网站上的数据并且将其放回。
+
+#### 核心代码
+
+```go
+// 请求第三方数据
+reponse, err := http.Get(url)
+
+// 获取响应体
+body := response.Body
+
+// 数据返回 Clien
+c.DataFromReader(http.StatusOK, contenLength, contentType, body, extraHeaders)
+
+```
 
 
 
