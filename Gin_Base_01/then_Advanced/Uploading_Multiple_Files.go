@@ -16,6 +16,9 @@ import (
 func main() {
 	r := gin.Default()
 	
+	// c.Request.ParseMultipartForm()并不能限制上传文件的大小，只是限制了上传的文件读取到内存部分的大小，如果超过了就存入了系统的临时文件中。
+	// 如果需要限制文件大小，需要使用github.com/gin-contrib/size中间件，如demo中使用r.Use(limits.RequestSizeLimiter(4 << 20))限制最大4Mb。
+	r.MaxMultipartMemory= 8 << 20   // 8 MB
 	r.POST("/upload", func(c *gin.Context) {
 		form, err := c.MultipartForm()  //  获取form
 		if err != nil {
