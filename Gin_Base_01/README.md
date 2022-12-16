@@ -477,6 +477,20 @@ func main() {
 
 Client 请求的路由数据进行预处理（数据加载、请求验证(过滤)等 …）
 
+**中间件里面有错误如果不想继续后续接口的调用不能直接`return`，而是应该调用`c.Abort()`方法。**
+
+源码如下：
+
+```go
+// Abort prevents pending handlers from being called. Note that this will not stop the current handler.
+// Let's say you have an authorization middleware that validates that the current request is authorized.
+// If the authorization fails (ex: the password does not match), call Abort to ensure the remaining handlers
+// for this request are not called.
+func (c *Context) Abort() {
+	c.index = abortIndex
+}
+```
+
 核心代码
 
 ```go
