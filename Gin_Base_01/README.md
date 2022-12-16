@@ -412,7 +412,16 @@ func main() {
 #### 核心代码
 
 ```go
-
+form, err := c.MultipartForm()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		files := form.File["file_key"]
+		for _, file := range files{
+			c.SaveUploadedFile(file,dst + file.Filename)
+			fmt.Printf("文件 %s 上传成功...\n", file.Filename)
+		}
+				c.String(http.StatusOK,fmt.Sprintf("%d files uploaded...",len(files)))
 ```
 
 Demo
