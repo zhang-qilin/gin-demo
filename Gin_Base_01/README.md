@@ -654,6 +654,156 @@ func AuthMiddleware() gin.HandlerFunc {
 
 
 
+## 十、登录中间件
+
+快速实现登录验证中间件方法
+
+Gin 框架提供了快速登录验证中间件，可以完成登录的验证
+
+#### 核心代码
+
+```go
+accounts := gin.Accounts{ // gin.Account是map[string]string 类型
+		"admin": "adminpw",
+	}
+// 动态添加用户
+accounts["Golang"] = "123654"
+accounts["Gin"] = "789abc"
+auth := gin.BasicAuth(accounts)
+```
+
+Demo
+
+```go
+/*
+* @Time ： 2022-12-18 23:58
+* @Auth ： 张齐林
+* @File ：Login_middleware.go
+* @IDE ：GoLand
+ */
+package main
+
+import (
+	"log"
+	"net/http"
+	
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	r := gin.Default()
+
+	r.Use(AuthMiddleware())
+	
+	r.GET("/login", func(context *gin.Context) {
+		// 获取用户，它是由 BasicAuth 中间件设置的
+		user:= context.MustGet(gin.AuthUserKey).(string)
+		context.JSON(http.StatusOK,"登录成功..." + "欢迎您: " + user)
+	})
+	
+	err := r.Run()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+}
+
+func AuthMiddleware() gin.HandlerFunc {
+	// 初始化用户
+	accounts := gin.Accounts{ // gin.Accounts 是 map[string]string
+		"admin":"adminpw",
+		"system":"systempw",
+	}
+	
+	// 动态添加用户
+	accounts["root"]="rootpw"
+	
+	// 将用户添加到登录中间件中
+	auth := gin.BasicAuth(accounts)
+	return auth
+}
+```
+
+## 十一、同步异步
+
+`同步方法`：调用一旦开始，调用者必须等到方法调用返回后，才能继续后续的行为。
+
+`异步方法`：调用更像一个消息队列，一旦开始，方法调用就会立即返回，调用者就可以继续后面的操作，而异步操作通常会在另一个 Go 程（Goroutine）过程，不会障碍调用者的工作。
+
+可以在中间件或处理程序中启动新的Go程（Goroutines）
+
+**特别注意：需要使用上下文的副本**
+
+#### 核心代码
+
+```go
+for j:=0;j<6;j++ {
+    go func(i int) { // TODO：创建的Go程
+        // 创建要在 goroutine 中使用的副本
+        cCp := c.Copy()
+        time.Sleep(time.Duration(i) * time.Second)
+        // 这里使用创建的副本（保证不相互影响）
+        fmt.Println("第" + strconv.Itoa(i) + "个Go程: " + cCp.Request.URL.Path)
+    }(j)
+}
+c.JSON(200,"主程序（主Go程）" + c.Request.URL.Path)
+```
+
+Demo
+
+```go
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
