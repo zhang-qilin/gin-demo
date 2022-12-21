@@ -840,7 +840,201 @@ func main() {
 Demo
 
 ```go
+/*
+* @Time ： 2022-12-21 23:03
+* @Auth ： 张齐林
+* @File ：Programs_on_multiple_servers.go
+* @IDE ：GoLand
+ */
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"time"
+	
+	"github.com/gin-gonic/gin"
+	"golang.org/x/sync/errgroup"
+)
+
+var (
+	// 定义路由组
+	g errgroup.Group
+)
+
+func main() {
+	// 服务器1:
+	server01 := &http.Server{
+		Addr: ":9091",
+		Handler: router01(),
+		ReadHeaderTimeout: time.Second * 5,
+		WriteTimeout: time.Second * 10,
+	}
+	// 服务器2:
+	server02 := &http.Server{
+		Addr: ":9092",
+		Handler: router02(),
+		ReadHeaderTimeout: time.Second * 5,
+		WriteTimeout: time.Second * 10,
+	}
+	
+	// 开启服务
+	g.Go(func() error {
+		return server01.ListenAndServe()
+	})
+	g.Go(func() error {
+		return server02.ListenAndServe()
+	})
+	if err := g.Wait(); err!= nil{
+		fmt.Printf("执行失败, err: %s\n", err)
+	}
+	
+}
+
+func router01() http.Handler {
+	r1 :=gin.Default()
+	r1.GET("/MyServer01", func(c *gin.Context) {
+		c.JSON(http.StatusOK,gin.H{
+			"code":http.StatusOK,
+			"msg":"服务器程序1的相对应",
+		},
+		)
+	})
+	return r1
+}
+func router02() http.Handler {
+	r2 :=gin.Default()
+	r2.GET("/MyServer02", func(c *gin.Context) {
+		c.JSON(http.StatusOK,gin.H{
+			"code":http.StatusOK,
+			"msg":"服务器程序2的相对应",
+		},
+		)
+	})
+	return r2
+}
 ```
+
+## 十三、路由组
+
+一个项目中可以有多个路由，同时可以通过路由组来继续管理和有效的分类，使路由对应的代码易于阅读
+
+#### 核心代码
+
+```go
+router := gin.Default()
+	// 路由分组1
+	v1 := router.Group("/v1")  // 路由分组1(一级路径)
+	{
+		r := v1.Group("/user")     // 路由分组(二级路径)
+		r.GET("/login",login)      // 响应请求: v1/user/login
+		// 路由分组(三级路径)
+		r2 := r.Group("/showInfo")  // /v1/user/showInfo
+		r2.GET("/abstract",abstract)   // 响应请求: v1/user/showInfo/abstract
+		r2.GET("detail",detail)   // 响应请求：v1/user/showInfo/detail
+		
+	}
+	// 路由分组2
+	v2 := router.Group("/v2")
+	{
+		v2.GET("/other",other)
+	}
+```
+
+Demo
+
+```go
+/*
+* @Time ： 2022-12-21 23:43
+* @Auth ： 张齐林
+* @File ：Routing_group.go
+* @IDE ：GoLand
+ */
+package main
+
+import (
+	"log"
+	"net/http"
+	
+	"github.com/gin-gonic/gin"
+)
+
+type ResGroup struct {
+	Data string
+	Path string
+}
+
+func main() {
+	
+	router := gin.Default()
+	// 路由分组1
+	v1 := router.Group("/v1")  // 路由分组1(一级路径)
+	{
+		r := v1.Group("/user")     // 路由分组(二级路径)
+		r.GET("/login",login)      // 响应请求: v1/user/login
+		// 路由分组(三级路径)
+		r2 := r.Group("/showInfo")  // /v1/user/showInfo
+		r2.GET("/abstract",abstract)   // 响应请求: v1/user/showInfo/abstract
+		r2.GET("detail",detail)   // 响应请求：v1/user/showInfo/detail
+		
+	}
+	// 路由分组2
+	v2 := router.Group("/v2")
+	{
+		v2.GET("/other",other)
+	}
+	
+	err := router.Run()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+}
+
+func other(c *gin.Context) {
+	c.JSON(http.StatusOK,ResGroup{
+		Data: "other",
+		Path: c.Request.URL.Path,
+	})
+}
+
+func detail(c *gin.Context) {
+	c.JSON(http.StatusOK,ResGroup{
+		Data: "detail",
+		Path: c.Request.URL.Path,
+	})
+}
+
+func abstract(c *gin.Context) {
+	c.JSON(http.StatusOK,ResGroup{
+		Data: "abstract",
+		Path: c.Request.URL.Path,
+	})
+}
+
+func login(c *gin.Context) {
+	c.JSON(http.StatusOK,ResGroup{
+		Data: "login",
+		Path: c.Request.URL.Path,
+	})
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
