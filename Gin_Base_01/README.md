@@ -808,6 +808,40 @@ func sysnc(c *gin.Context) {
 
 
 
+## 十二、多服务器程序运行
+
+程序运行在多个服务器上
+
+多服务器程序同时运行，最先想到的方法是就是：写多个 Gin 框架对应的程序
+
+其实，Gin 框架提供了快捷的方法	
+
+#### 核心代码
+
+```go
+func main() {
+    // 服务器1：http://127.0.0.1:8080/MulServer01
+	server01 := &http.Server{
+		Addr: ":8080",
+		Handler: router01(),
+		ReadHeaderTimeout: time.Second * 5,
+		WriteTimeout: time.Second * 10,
+	}
+	// 服务器2：http://127.0.0.1:8081/MulServer02
+	server02 := &http.Server{
+		Addr: ":8081",
+		Handler: router02(),
+		ReadHeaderTimeout: time.Second * 5,
+		WriteTimeout: time.Second * 10,
+	}
+}
+```
+
+Demo
+
+```go
+```
+
 
 
 
