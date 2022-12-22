@@ -1017,8 +1017,88 @@ func login(c *gin.Context) {
 		Data: "login",
 		Path: c.Request.URL.Path,
 	})
+} 
+```
+
+## 十四、Gin 框架Bind
+
+将 Client 提交的 JSON 数据与 Server 对应的对象（实体/结构体）进行关联。
+
+Gin 框架提供了 Bind ，可以根据请求Body数据，将数据赋值到指定的结构体变量中（类似于序列化和反序列化）
+
+Gin 的 Bind 方法，主要是将结构体与请求参数进行绑定，请求参数 JSON 对应的 Key 就是结构体对应的字段。
+
+#### 核心代码
+
+```go
+type Login struct {
+	User string`form:"user"binding:"required"`
+	PassWord string`form:"password"binding:"required,min=6,max=12"`
+}
+
+c.Bing(&login)
+```
+
+Demo
+
+```go
+/*
+* @Time ： 2022-12-22 22:43
+* @Auth ： 张齐林
+* @File ：Gin_Bind.go
+* @IDE ：GoLand
+ */
+package main
+
+import (
+	"log"
+	"net/http"
+	
+	"github.com/gin-gonic/gin"
+)
+
+type Login struct {
+	UserName string `json:"user_name" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	Remark string `json:"remark"`
+}
+
+func main() {
+	
+	r := gin.Default()
+	r.POST("/login", func(c *gin.Context) {
+		
+		var login Login
+		err := c.Bind(&login)
+		if err != nil {
+			c.JSON(http.StatusBadRequest,gin.H{
+				"msg":"绑定失败,参数错误",
+				"data":err.Error(),
+			})
+			return
+		}
+		if login.UserName == "user" && login.Password == "123456"{
+		c.JSON(http.StatusBadRequest,gin.H{
+			"msg":"登录成功...",
+			"data":"OK",
+		})
+			return
+		}
+		c.JSON(http.StatusBadRequest,gin.H{
+			"msg":"登录失败...",
+			"data":"error",
+		})
+	})
+	
+	err := r.Run()
+	if err != nil {
+		log.Println(err)
+		return
+	}
 }
 ```
+
+
 
 
 
