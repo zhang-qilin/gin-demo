@@ -1230,7 +1230,58 @@ func getOtherAPI(context *gin.Context) {
 }
 ```
 
+## 十六、参数校验_1
 
+由于GoLang没有跟 Java 一样的注解快速进行参数的校验，但是可以通过struct tag （结构体标签）进行序列化
+
+如以下常用的
+
+```go
+type User struct {
+    ID string `josn:"id"`
+    Name string `json:"name"`
+    Age string `json:"age"`
+}
+```
+
+
+
+#### 核心代码
+
+```go
+```
+
+Demo
+
+```go
+```
+
+
+
+## 十七、参数校验_1
+
+
+
+#### 核心代码
+
+```go
+
+```
+
+Demo
+
+```go
+```
+
+
+
+## 十八、
+
+## 十九、
+
+## 二十、
+
+## 二十一、
 
 
 
