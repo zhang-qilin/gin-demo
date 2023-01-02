@@ -1,0 +1,67 @@
+basePath: 这里写base path
+host: 这里写接口服务的host
+info:
+  contact:
+    email: support@swagger.io
+    name: 这里写联系人信息
+    url: http://www.swagger.io/support
+  description: 这里写描述信息
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: 这里写标题
+  version: "1.0"
+paths:
+  /login:
+    get:
+      consumes:
+      - application/json
+      description: login
+      parameters:
+      - description: 用户名
+        in: query
+        name: username
+        required: true
+        type: string
+      - description: 密码
+        in: query
+        name: password
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"data":"{"name":"username","password":"password"}","msg":"OK"}'
+          schema:
+            type: string
+      summary: 登录
+      tags:
+      - 登录接口
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: register
+      parameters:
+      - description: 用户名
+        in: formData
+        name: user_name
+        required: true
+        type: string
+      - description: 密码
+        in: formData
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"data":"{"name":"username","password":"password"}","msg":"OK"}'
+          schema:
+            type: string
+      summary: 注册
+      tags:
+      - 注册接口
+swagger: "2.0"
