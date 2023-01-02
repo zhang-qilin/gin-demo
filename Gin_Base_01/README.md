@@ -1550,7 +1550,7 @@ Gin 框架使用 Swagger
 
 #### 核心代码
 
-内容涉及到的比较多，参考 [使用Swagger生成接口文档](./使用Swagger生成接口文档.md)
+内容涉及到的比较多，参考 [使用Swagger生成接口文档](then_Advanced/swagger01/使用Swagger生成接口文档.md)
 
 Demo
 
