@@ -1232,7 +1232,7 @@ func getOtherAPI(context *gin.Context) {
 
 ## 十六、参数校验_1
 
-由于GoLang没有跟 Java 一样的注解快速进行参数的校验，但是可以通过struct tag （结构体标签）进行序列化
+由于GoLang没有跟 Java 一样的注解快速进行参数的校验，但是可以通过struct tag （结构体标签）进行序列化。
 
 如以下常用的
 
@@ -1244,7 +1244,7 @@ type User struct {
 }
 ```
 
-如果需要更复杂的校验，这时需要用一些专业的库来完成
+如果需要更复杂的校验，这时需要用一些专业的库来完成。
 
 go-playground / validator 作为一款优秀（使用简单、快捷）的 Go 语言校验库，基于标记作为结构体和单个字段实现值校验。
 
@@ -1369,9 +1369,9 @@ func main() {
 
 ## 十七、参数校验_2
 
-Go 语言参数校验库（go-playground / validator）可以完成数据的基本校验，校验的方法是通过结构体的 tag 完成。但是如果是结构体的嵌套可通过以下的方法来实现校验
+Go 语言参数校验库（go-playground / validator）可以完成数据的基本校验，校验的方法是通过结构体的 tag 完成。但是如果是结构体的嵌套可通过以下的方法来实现校验。
 
-dive 关键字代表 进入到嵌套结构体进行判断
+dive 关键字代表 进入到嵌套结构体进行判断。
 
 #### 核心代码
 
@@ -1511,7 +1511,154 @@ func testData(c *gin.Context) {
 
 
 
-## 十八、
+## 十八、SWAGGER
+
+一些接口文档（JSON 或YMAL 元数据描述API的属性），并且具有良好的调试功能（可视化的RESTful 客户端）方便前端调试。
+
+Swagger 是一个规范和完整的框架，用于生成、描述、调用和可视化 RESTful 风格的 Web 服务。
+
+作用：
+
+1. 接口的文档在线自动生成
+2. 功能测试
+
+Gin 框架使用 Swagger
+
+- 添加依赖
+
+  ```bash
+  go get -u github.com/swaggo/swag/cmd/swag
+  go get -u github.com/swaggo/gin-swagger
+  go get -u github.com/swaggo/files
+  ```
+
+- 给 Handler 对应方法添加注解
+
+  ```go
+  @Tags : 说明该方法的作用  @Summary登录
+  @Description : 这个API详细的描述
+  @Accept : 表示该请求的请求类型
+  @Paoduce : 返回数据类型
+  @Param : 参数，表示需要传递到服务器端的参数
+  @Sucess : 成功返回给客户端的信息
+  @Router : 路由信息
+  ```
+
+  
+
+
+
+#### 核心代码
+
+内容涉及到的比较多，参考 [使用Swagger生成接口文档](./使用Swagger生成接口文档.md)
+
+Demo
+
+```go
+/*
+* @Time ： 2023-01-02 17:13
+* @Auth ： 张齐林
+* @File ：main.go
+* @IDE ：GoLand
+ */
+package main
+
+import (
+	"fmt"
+	"net/http"
+	
+	_ "swagger/docs"
+	
+	"github.com/gin-gonic/gin"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+)
+
+type User struct {
+	UserName string `json:"user_name"`
+	Password string `json:"password"`
+}
+
+type Response struct {
+	Code int `json:"code"`
+	Msg string `json:"msg"`
+	Data string `json:"data"`
+}
+
+// @title 这里写标题
+// @version 1.0
+// @description 这里写描述信息
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name 这里写联系人信息
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host 这里写接口服务的host
+// @BasePath 这里写base path
+func main() {
+	r := gin.Default()
+	// Swagger 中间件主要的作用是: 方便前端对接口进行调试。不影响接口的实际功能
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))  // 使用 Swagger 中间件
+	r.GET("/login",login)
+	r.POST("register",register)
+	r.Run()
+	
+}
+
+// @Tags 登录接口
+// @Summary 登录
+// @Description login
+// @Accept json
+// @Produce json
+// @Param username query string true "用户名"
+// @Param password query string false "密码"
+// @Success 200 {string} json "{"code":200,"data":"{"name":"username","password":"password"}","msg":"OK"}"
+// @Router /login [get]
+func login(c *gin.Context) {
+	userName :=c.Query("name")
+	pwd := c.Query("pwd")
+	fmt.Println(userName,pwd)
+	res:=Response{
+		Code: http.StatusOK,
+		Msg:  "登录成功...",
+		Data: "OK",
+	}
+	c.JSON(http.StatusOK,res)
+}
+
+// @Tags 注册接口
+// @Summary 注册
+// @Description register
+// @Accept json
+// @Produce json
+// @Param user_name formData string true "用户名"
+// @Param password formData string true "密码"
+// @Success 200 {string} json "{"code":200,"data":"{"name":"username","password":"password"}","msg":"OK"}"
+// @Router /register [post]
+func register(c *gin.Context) {
+	var user User
+	// err := c.Bind(&user)
+	err := c.BindQuery(&user)
+	if err != nil {
+		fmt.Println("绑定错误: ",err)
+		c.JSON(http.StatusBadRequest,"数据错误...")
+		return
+	}
+	res:= Response{
+		Code: http.StatusOK,
+		Msg:  "注册成功...",
+		Data: "OK",
+	}
+	c.JSON(http.StatusOK,res)
+}
+
+```
+
+
 
 ## 十九、
 
