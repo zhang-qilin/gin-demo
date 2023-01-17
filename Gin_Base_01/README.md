@@ -1678,7 +1678,7 @@ Cookie：
 
 ![image-20230117204256491](README.assets/image-20230117204256491.png)
 
-Gin 框架如何实现Cookie
+
 
 #### 核心代码
 
@@ -1695,9 +1695,167 @@ func Auth() gin.HandlerFunc {
 }
 ```
 
+Demo
+
+```go
+/*
+* @Time ： 2023-01-17 20:45
+* @Auth ： 张齐林
+* @File ：Gin_Cookie.go
+* @IDE ：GoLand
+ */
+package main
+
+import (
+	"encoding/hex"
+	"fmt"
+	"net/http"
+	
+	"github.com/gin-gonic/gin"
+)
+
+var (
+	cookieName string
+	cookieValue string
+)
 
 
-## 二十、
+func CookieAuth() gin.HandlerFunc {
+	return func(context *gin.Context) {
+		val,_ := context.Cookie(cookieName)
+		if val == ""{         // 如果是首次登录，分发cookie；浏览器保存cookie，下次登录有效
+		context.SetCookie(cookieName,cookieValue,3600,"/","localhost",true,true)
+		fmt.Println("Cookie已经保存完成...")
+		}
+	}
+}
+
+func main() {
+
+	r:=gin.Default()
+	
+	// Cookie 中间件
+	r.Use(CookieAuth())
+	
+	r.GET("/cookie", func(c *gin.Context) {
+		name:=c.Query("name")
+		if len(name) <= 0 {
+			c.JSON(http.StatusBadRequest,"数据错误")
+			return
+		}
+		cookieName = "cookie_" + name  // cookie的名称
+		cookieValue = hex.EncodeToString([]byte(cookieName+"value"))  // cookie的值
+		val, _ := c.Cookie(cookieName)
+		if val == "" {
+			c.String(http.StatusOK,"Cookie: %s 已经下发，下次登录有效",cookieName)
+			return
+		}
+		c.String(http.StatusOK,"验证成功... cookie值为: %s",val)
+	})
+	r.Run(":9090")
+	
+}
+```
+
+## 二十、Gin 框架Session
+
+Cookie不是很安全，别人可以分析存放在本地的Cookie并进行Cookie欺骗。
+
+单个Cookie保存的数据不能超过4K
+
+针对以上的问题，引入了Session机制
+
+Session是另一种记录客户端状态的机制，在不同的Cookie保存在客户端浏览器中，而Session保存在服务器上。
+
+客户端浏览器访问服务器时，服务器把客户端信息以某种形式记录在服务器上，这就是Session。
+
+客户端浏览器再次访问时，只需要从该Session中查找客户的状态就可以了。
+
+如果说Cookie机制是通过检查客户端身上的“通行证”来确认客户身份的话，那么Session机制就是通过检查服务器上的“客户明细表”来确认客户身份。
+
+Session相当于程序在服务器上建立的一份客户档案，客户来访时，只需要查询客户档案表即可。
+
+#### 核心代码
+
+```go
+	// 路由上加入Session中间件
+	r.Use(session.Session("mysession","secret"))
+	// 获取Session判断
+	session := session.Default(c)
+			sessionData := session.Get(sessionName)
+			if sessionData != sessionValue{
+			}
+```
+
+Demo
+
+```go
+/*
+* @Time ： 2023-01-17 21:23
+* @Auth ： 张齐林
+* @File ：Gin_Session.go
+* @IDE ：GoLand
+ */
+package main
+
+import (
+	"net/http"
+	
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-gonic/gin"
+)
+
+var (
+	sessionName string
+	sessionValue string
+)
+
+type MyOption struct {
+	sessions.Options
+}
+
+func main() {
+
+	r:= gin.Default()
+	
+	// 路由上加入Session中间件
+	store := cookie.NewStore([]byte("session_secret"))
+	r.Use(sessions.Sessions("mysession", store))
+	
+	r.GET("/session", func(c *gin.Context) {
+		name := c.Query("name")
+		if len(name) <= 0 {
+			c.JSON(http.StatusBadRequest,"数据错误...")
+			return
+		}
+		sessionName = "session_" + name
+		sessionValue = "session_value_" + name
+		session := sessions.Default(c)  // 获取session
+		sessionData := session.Get(sessionName)
+		if sessionData != sessionValue {
+			// 保存session值
+			session.Set(sessionName,sessionValue)
+			o := MyOption{}
+			o.Path = "/"
+			o.MaxAge = 10   // 有效期，单位 s
+			session.Options(o.Options)
+			session.Save()  // 保存session
+			c.JSON(http.StatusOK,"首次访问... session 已保存...")
+			return
+		}
+		c.JSON(http.StatusOK, "访问成功... 您的session: " + sessionData.(string))
+		
+	})
+	r.Run(":9090")
+
+	
+}
+
+// todo:文档地址：https://github.com/gin-contrib/sessions
+```
+
+
 
 ## 二十一、
 
