@@ -1660,7 +1660,42 @@ func register(c *gin.Context) {
 
 
 
-## 十九、
+## 十九、Gin 框架Cookie
+
+Web 应用程序是使用HTTP协议传输数据的。
+
+HTTP协议是无状态的协议，一旦数据交换完毕，客户端与服务端的连接就会关闭，再次交换数据需要经历新的连接，
+
+这就意味着服务器无法从连接上跟踪会话，即用户A购买了一件商品放入购物车内，当再次购买商品时服务器已经无法判断该购买行为属于用户A的会话还是用户B的会话了。
+
+要跟踪该会话，必须引进一种机制。
+
+Cookie：
+
+​		由于HTTP是一种无状态协议，服务器单从网络连接上无从知道客户身份，因此我们需要给客户端颁发一个通行证，每人一个，无论谁访问都必须携带自己通行证，这样服务器就能从通行证上确认客户身份了。
+
+这就是Cookie的工作原理。
+
+![image-20230117204256491](README.assets/image-20230117204256491.png)
+
+Gin 框架如何实现Cookie
+
+#### 核心代码
+
+```go
+// 自定义中间件
+func Auth() gin.HandlerFunc {
+	return func(context *gin.Context) {
+		val,_ := context.Cookie(cookieName)
+		if val == ""{         // 如果是首次登录，分发cookie；浏览器保存cookie，下次登录有效
+            // Cookie的名称、Cookie的值、Cookie的有效期、Cookie的路径、Cookie的域名、Cookie是否支持安全以及http等
+		context.SetCookie(cookieName,cookieValue,3600,"/","localhost",false,true)
+		}
+	}
+}
+```
+
+
 
 ## 二十、
 
