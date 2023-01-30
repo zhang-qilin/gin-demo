@@ -1963,7 +1963,100 @@ func httpsHandel() gin.HandlerFunc {
 
 ```
 
+## 二十二、安全认证_1
 
+实现API接口的端点认证，保障接口的安全性。
+
+RestGate：REST API 端点安全认证中间件。
+
+优点：
+
+1. Go语言实现，可以与Gin框架无缝对接。
+2. 良好的设计，易于使用。	
+
+Gin框架使用RestGate
+
+添加依赖
+
+```bash
+go get github.com/pjebs/restgate
+```
+
+#### 核心代码
+
+```go
+r.Use(authMiddleware())  // 中间件
+restgate.New("X-Auth-Key", "X-Auth-Secret", restgate.Static,
+	restgate.Config{
+        Key: []string{"123456","gin"},  // 组密钥
+        Secret: []string{"secret","gin_ok"}
+	})
+```
+
+Demo
+
+```go
+/*
+* @Time ： 2023-01-30 17:02
+* @Auth ： 张齐林
+* @File ：Security_authentication_1.go
+* @IDE ：GoLand
+ */
+package main
+
+import (
+	"net/http"
+	
+	"github.com/gin-gonic/gin"
+	"github.com/pjebs/restgate"
+)
+
+func main() {
+	
+	r:=gin.Default()
+	r.Use(authMiddleware())
+	r.GET("/auth1", func(c *gin.Context) {
+	resData := struct {
+		Code int `json:"code"`
+		Msg any `json:"msg"`
+		Data any `json:"data"`
+	}{http.StatusOK,"校验通过...","OK"}
+	c.JSON(http.StatusOK,resData)
+	})
+	r.Run(":9090")
+}
+
+func authMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		gate := restgate.New("X-Auth-Key",
+			"X-Auth-Secret",
+			restgate.Static,
+			restgate.Config{
+				Key:                []string{"admin", "gin"},
+				Secret:             []string{"123456", "gin_ok"},
+				HTTPSProtectionOff: true, // 关闭https验证
+			}) // 头部key标题值，头部密钥标题值，权限源，配置项
+			nextCalled := false
+			nextAdapter := func (http.ResponseWriter,*http.Request){
+				nextCalled = true
+				c.Next()
+			}
+			gate.ServeHTTP(c.Writer, c.Request, nextAdapter)
+			if nextCalled == false {
+				c.AbortWithStatus(http.StatusUnauthorized)
+			}
+			
+	}
+}
+
+// TODO: 文档 https://github.com/pjebs/restgate
+```
+
+
+
+## 二十三、安全认证_2
+
+## 二十四、
 
 
 
