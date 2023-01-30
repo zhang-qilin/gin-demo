@@ -1759,6 +1759,8 @@ func main() {
 
 ## 二十、Gin 框架Session
 
+**引入Session技术**
+
 Cookie不是很安全，别人可以分析存放在本地的Cookie并进行Cookie欺骗。
 
 单个Cookie保存的数据不能超过4K
@@ -1852,12 +1854,116 @@ func main() {
 	
 }
 
-// todo:文档地址：https://github.com/gin-contrib/sessions
+// todo:文档地址：https://github.com/gin-contrib/sessions           
 ```
 
 
 
-## 二十一、
+## 二十一、Gin 框架Https
+
+超文本传输协议HTTP协议被用于在Web浏览器和网站服务间传递信息。
+
+HTTP协议以明文方式发送内容，不提供任何方式的数据加密，如果攻击者截取了Web浏览器和服务器之间的传输报文，就可以直接读懂其中的信息。
+
+因此，HTTP协议不适合传输一些敏感的信息，比如：行用卡号、密码等支付的信息。
+
+为了解决HTTP协议的缺陷，需要使用另一种协议：安全套字节层超文本传输协议HTTPS。
+
+为了数据传输安全，HTTPS在HTTP的基础上加入了`SSL/TLS`协议，SSL/TLS依靠证书来验证服务器的身份，并为浏览器和服务器之间的通信加密。
+
+HTTPS协议是由SSL/TLS协议构建的可进行加密传输、身份认证的网络协议，要比HTTP协议安全。
+
+以下是HTTPS和HTTP的主要区别：
+
+1. HTTPS协议需要到CA申请证书，一般免费证书较少，因此需要一定的费用。
+2. HTTP是超文本传输协议，信息是明文传输，HTTPS则是具有安全性的SSL/TLS加密传输协议。
+3. HTTP的连接信息很简单，是无状态的；HTTPS协议是由SSL/TLS协议构建的可进行加密传输、身份认证的网络协议，比HTTP协议安全。
+
+Gin 框架实现HTTPS
+
+申请证书
+
+证书申请需要收费，不过可以通过KeyManager来生成测试证书（https://keymanager.org/）
+
+#### 核心代码
+
+```go
+router.Use(TlsHandler())  // 证书中间件
+router.RunTLS(":8090", path + "jz.crt", path + "jz.key")
+```
+
+Demo
+
+```go
+/*
+* @Time ： 2023-01-30 15:00
+* @Auth ： 张齐林
+* @File ：Gin_Https.go
+* @IDE ：GoLand
+ */
+package main
+
+import (
+	"fmt"
+	"net/http"
+	
+	"github.com/gin-gonic/gin"
+	"github.com/unrolled/secure"
+)
+
+type HttpRes struct {
+	Code int `json:"code"`
+	Result string `json:"result"`
+}
+
+func main() {
+	r:=gin.Default()
+	r.Use(httpsHandel())   // https 对应的中间件
+	r.GET("/https_test", func(c *gin.Context) {
+		fmt.Println(c.Request.Host)
+		c.JSON(http.StatusOK,HttpRes{
+			Code:   http.StatusOK,
+			Result: "测试成功...",
+		})
+	})
+	r.RunTLS(":9090","SSL_TLS/zhangqilin.crt","SSL_TLS/zhangqilin.key")
+}
+
+func httpsHandel() gin.HandlerFunc {
+	return func(context *gin.Context) {
+		secureMiddle := secure.New(secure.Options{
+			SSLRedirect: true,  // 只允许https请求
+			// SSLHost:   // http到https的重定向
+			STSSeconds: 1536000,  // Strict-Transport-Security header 的时效：1年
+			// 以下部分为HTTP请求头内容，为固定写法
+			STSIncludeSubdomains: true,  // IncludeSubdomains will be appended to the Strict-Transport-Security header
+			STSPreload: true, // STS Preload(预加载)
+			FrameDeny: true,  // X-Frame-Options 有三个值： DENY(表示该页面不允许在frame中展示，即便是在相同域名中的页面中)
+			ContentTypeNosniff: true,  // 禁用浏览器的类型猜测行为防止基于 MIME 类混淆的攻击
+			BrowserXssFilter: true,  // 启用XSS保护，并在检查到XSS攻击时，停止渲染页面
+			// IsDevelopment: true,  // 开发模式
+		})
+		err := secureMiddle.Process(context.Writer, context.Request)
+		// 如果不安全，终止
+		if err != nil {
+			context.AbortWithStatusJSON(http.StatusBadRequest,"数据不安全")
+			return
+		}
+		// 如果是重定向，终止
+		if ststus := context.Writer.Status();ststus>300&&ststus<399{
+			context.Abort()
+			return
+		}
+		context.Next()
+	}
+}
+
+// TODO: 测试证书生成工具 https://keymanager.org/
+// TODO: 中间件对应的包 github.com/unrolled/secure
+
+```
+
+
 
 
 
