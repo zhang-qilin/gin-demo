@@ -58,7 +58,7 @@ func logMiddleware() gin.HandlerFunc {
 		// 分割后的文件名称
 		fileName+"%Y%m%d.log",
 		// 生成软连接，指向最新的日志文件
-		rotatelogs.WithLinkName(fileName),
+		rotatelogs.WithLinkName(fileName), // 在指定的目录下生成软链文件， 指向最新的日志文件。注意！！！必须在管理员权限下开终端启动。
 		// 设置最大保存时间(7天)
 		rotatelogs.WithMaxAge(7*24*time.Hour), // 以 Hour 为单位的整数
 		// 设置日志切割时间间隔(1天)
