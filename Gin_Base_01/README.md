@@ -1550,7 +1550,7 @@ Gin 框架使用 Swagger
 
 #### 核心代码
 
-内容涉及到的比较多，参考 [使用Swagger生成接口文档](then_Advanced/swagger01/使用Swagger生成接口文档.md)
+内容涉及到的比较多，参考 [使用Swagger生成接口文档](improve/swagger01/使用Swagger生成接口文档.md)
 
 Demo
 
@@ -1963,7 +1963,6 @@ func httpsHandel() gin.HandlerFunc {
 
 ```
 
-<<<<<<< HEAD
 ## 二十二、安全认证_1
 
 实现API接口的端点认证，保障接口的安全性。
@@ -2170,16 +2169,263 @@ func authMiddleware2() gin.HandlerFunc {
 }
 ```
 
+## 二十四、日志框架logrus_1
+
+开发的服务端代码总会出现未知的错误，那么排错以及维护就是服务端开发重要且必不可少的一部分。
+
+但是，服务端一般是以后后台服务的方式运行的，没有控制台，那么该如何输出程序相关的错误消息。 这就是需要用到了日志。
+
+使用logrus来记录日志
+
+Logrus 是一个结构化，可插拔的Go日志框架，完全兼容官方的log库接口。
+
+功能强大的同时，Logrus 具有高度的灵活性，它提高了自定义插件的功能，有TEXT与JSON两种可选的日志输出格式。
+
+Logrus还支持Field机制和可扩展的HOOK机制。
+
+它鼓励用户通过Field机制进行精细化的、结构化的日志记录，允许用户通过hook的方式将日志分发到容易地方。
+
+许多著名开源项目，如docker、prometheus 等都是用Logrus来记录日志的。
+
+添加依赖
+
+```bash
+go get github.com/sirupsen/logrus
+```
+
+#### 核心代码
+
+示范代码
+
+```go
+package main
+
+import (
+  log "github.com/sirupsen/logrus"
+)
+
+func main() {
+  log.WithFields(log.Fields{
+    "animal": "walrus",
+  }).Info("A walrus appears")
+}
+```
+
+Demo
+
+```go
+/*
+* @Time ： 2023-01-31 17:08
+* @Auth ： 张齐林
+* @File ：Log_frame_logrus_1.go
+* @IDE ：GoLand
+ */
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+)
+
+// 全局创建一个log实例
+var log = logrus.New()
+
+func initLorus() error {
+	log.Formatter = &logrus.JSONFormatter{} // 设置为JSON格式的日志
+	// log.Formatter = &logrus.TextFormatter{} // 设置为Text格式的日志
+	file, err := os.OpenFile("./gin_log.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Println("创建文件/打开文件失败...")
+		return err
+	}
+	// 设置log的默认文件输出
+	log.Out = file
+	// 设置log的默认终端输出
+	// log.Out = os.Stdout
+	// 设置gin框架的版本为: 发布版本
+	gin.SetMode(gin.ReleaseMode)
+	gin.DefaultWriter = log.Out
+	// 设置日志级别
+	log.Level = logrus.InfoLevel
+	return nil
+}
+
+func main() {
+
+	err := initLorus()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	r := gin.Default()
+	r.GET("/logrus", func(c *gin.Context) {
+		log.WithFields(logrus.Fields{
+			"url":    c.Request.RequestURI,
+			"method": c.Request.Method,
+			"params": c.Query("name"),
+			"IP":     c.ClientIP(),
+		}).Info()
+		resData := struct {
+			Code int    `json:"code"`
+			Msg  string `json:"msg"`
+			Data string `json:"data"`
+		}{http.StatusOK, "响应成功...", "OK!"}
+		c.JSON(http.StatusOK, resData)
+	})
+	r.Run(":9090")
+
+}
+
+```
 
 
 
+## 二十五、日志框架logrus_2
 
+在Gin框架中如何使用日志框架Logrus的一些复杂功能，比如：设置保存最大保存时间、设置日志切割时间间隔等？
 
+#### 核心代码
 
-## 二十四、
-=======
+通过`github.com/lestrrat-go/file-rotatelogs`来完成文件切割。
 
->>>>>>> parent of b381a78 (更新 README.md 文件内容)
+```go
+rotatelogs.New(
+		// 分隔后的文件名称
+		fileName + "%Y%m%d.log",
+		// 生成软连接，指向最新日志文件
+		// 如果文件的软连接处在，则会提示错误(并非panic错误)
+		rotatelogs.WithLinkName(fileName),
+		// 设置最大保存时间(7天)
+		rotatelogs.WithMaxAge(7*24*time.Hour),
+		// 设置日志切割时间间隔(1天)
+		rotatelogs.WithRotationTime(24*time.Hour),
+		)
+```
+
+通过`github.com/rifflock/lfshook`完成log文件的hook机制
+
+```go
+writeMap := lfshook.WriterMap{
+		logrus.InfoLevel:log,logWriter(),
+		logrus.FatalLevel:logWriter}
+```
+
+Demo
+
+```go
+/*
+* @Time ： 2023-01-31 18:26
+* @Auth ： 张齐林
+* @File ：Log_frame_logrus_2.go
+* @IDE ：GoLand
+ */
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"os"
+	"path"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
+	"github.com/rifflock/lfshook"
+	"github.com/sirupsen/logrus"
+)
+
+var (
+	logFilePath = "./"         // 日志文件保存的路径
+	logFileName = "system.log" // 日志文件的名称
+)
+
+func main() {
+
+	r := gin.Default()
+	r.Use(logMiddleware())
+	r.GET("/logrus2", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"code": http.StatusOK,
+			"msg":  "响应成功...",
+			"data": "OK！",
+		})
+	})
+	r.Run(":9090")
+}
+
+func logMiddleware() gin.HandlerFunc {
+	// 日志文件
+	fileName := path.Join(logFilePath, logFileName)
+	// 写入文件
+	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// 实例化logrus
+	logger := logrus.New()
+	// 设置日志级别
+	logger.SetLevel(logrus.DebugLevel)
+	// 设置输出到文件中
+	logger.Out = file
+	// 实现rotatelogs，设置文件分割
+	logsWriter, err := rotatelogs.New(
+		// 分割后的文件名称
+		fileName+"%Y%m%d.log",
+		// 生成软连接，指向最新的日志文件
+		rotatelogs.WithLinkName(fileName),
+		// 设置最大保存时间(7天)
+		rotatelogs.WithMaxAge(7*24*time.Hour), // 以 Hour 为单位的整数
+		// 设置日志切割时间间隔(1天)
+		rotatelogs.WithRotationTime(60*time.Second),
+	)
+	// hook 机制的设置
+	writerMap := lfshook.WriterMap{
+		logrus.DebugLevel: logsWriter,
+		logrus.InfoLevel:  logsWriter,
+		logrus.WarnLevel:  logsWriter,
+		logrus.ErrorLevel: logsWriter,
+		logrus.FatalLevel: logsWriter,
+		logrus.PanicLevel: logsWriter,
+	}
+	// 给logrus添加hook机制
+	logger.AddHook(lfshook.NewHook(writerMap, &logrus.JSONFormatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+
+		// 设置日志输出的格式，以下可暂时不使用
+		// DisableTimestamp:  false,
+		// DisableHTMLEscape: false,
+		// DataKey:           "",
+		// FieldMap:          nil,
+		// CallerPrettyfier:  nil,
+		// PrettyPrint:       false,
+		//
+	}))
+	return func(c *gin.Context) {
+		c.Next()
+		// 获取相关信息
+		// 请求方式(方法)
+		method := c.Request.Method
+		// 请求路由
+		reqUrl := c.Request.URL
+		// 状态码
+		statusCode := c.Writer.Status()
+		// 请求IP
+		clientIP := c.ClientIP()
+		logger.WithFields(logrus.Fields{
+			"status_code": statusCode,
+			"client_ip":   clientIP,
+			"req_method":  method,
+			"req_url":     reqUrl,
+		}).Info()
+	}
+
+}
+
+```
 
 
 
