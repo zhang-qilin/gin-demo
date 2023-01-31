@@ -1963,6 +1963,7 @@ func httpsHandel() gin.HandlerFunc {
 
 ```
 
+<<<<<<< HEAD
 ## 二十二、安全认证_1
 
 实现API接口的端点认证，保障接口的安全性。
@@ -2176,6 +2177,9 @@ func authMiddleware2() gin.HandlerFunc {
 
 
 ## 二十四、
+=======
+
+>>>>>>> parent of b381a78 (更新 README.md 文件内容)
 
 
 
