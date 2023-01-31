@@ -42,7 +42,8 @@ func logMiddleware() gin.HandlerFunc {
 	// 日志文件
 	fileName := path.Join(logFilePath, logFileName)
 	// 写入文件
-	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	// file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_RDWR, 0755)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -61,7 +62,8 @@ func logMiddleware() gin.HandlerFunc {
 		// 设置最大保存时间(7天)
 		rotatelogs.WithMaxAge(7*24*time.Hour), // 以 Hour 为单位的整数
 		// 设置日志切割时间间隔(1天)
-		rotatelogs.WithRotationTime(60*time.Second),
+		rotatelogs.WithRotationTime(24*time.Hour),
+		// rotatelogs.WithRotationTime(60*time.Second),
 	)
 	// hook 机制的设置
 	writerMap := lfshook.WriterMap{
