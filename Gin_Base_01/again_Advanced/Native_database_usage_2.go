@@ -15,8 +15,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var sqlDb *sql.DB
-var sqlResponse SqlResponse
+var sqlDb2 *sql.DB
+var sqlResponse2 SqlResponse
 
 func init() {
 	// 1、打开数据库
@@ -37,15 +37,15 @@ func init() {
 	}
 }
 
-// SqlUser 定义结构体、客户端提交的数据
-type SqlUser struct {
+// SqlUser2 定义结构体、客户端提交的数据
+type SqlUser2 struct {
 	Name    string `json:"name"`
 	Age     int    `json:"age"`
 	Address string `json:"address"`
 }
 
-// SqlResponse 响应体(响应Client的请求)
-type SqlResponse struct {
+// SqlResponse2 响应体(响应Client的请求)
+type SqlResponse2 struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 	Data    any    `json:"data"`
@@ -55,15 +55,51 @@ func main() {
 
 	r := gin.Default()
 	// 数据库的CRUD: 可以的对应Gin框架中的post、get、put、delete方法
-	r.POST("sql/insert", insertData) // 添加数据
-	r.GET("sql/get", getData)        // 查询记录(单条记录)
-	r.GET("sql/mulget", getMulData)  // 查询数据(多条记录)
-	r.PUT("sql/update", updateData)  // 更新数据
+	r.POST("sql/insert", insertData2)   // 添加数据
+	r.GET("sql/get", getData2)          // 查询记录(单条记录)
+	r.GET("sql/mulget", getMulData2)    // 查询数据(多条记录)
+	r.PUT("sql/update", updateData2)    // 更新数据
+	r.DELETE("sql/delete", deleteDate2) // 删除数据
 	r.Run(":9090")
 
 }
 
-func updateData(c *gin.Context) {
+func deleteDate2(c *gin.Context) {
+	name := c.Query("name")
+	var count int
+	// 1、先查询
+	sqlSelectStr := "SELECT COUNT(1) FROM user WHERE name = ?"
+	err := sqlDb.QueryRow(sqlSelectStr, name).Scan(&count)
+	if count <= 0 || err != nil {
+		sqlResponse.Code = http.StatusBadRequest
+		sqlResponse.Message = "删除的数据不存在..."
+		sqlResponse.Data = "error"
+		c.JSON(http.StatusOK, sqlResponse)
+		c.Abort()
+		return
+	}
+
+	sqlDeleteStr := "DELETE FROM user WHERE name = ?"
+	ret, err := sqlDb.Exec(sqlDeleteStr, name)
+	if err != nil {
+		sqlResponse.Code = http.StatusBadRequest
+		sqlResponse.Message = "删除失败...."
+		sqlResponse.Data = "error"
+		c.JSON(http.StatusOK, sqlResponse)
+		c.Abort()
+		return
+	}
+	sqlResponse.Code = http.StatusOK
+	sqlResponse.Message = "删除成功..."
+	sqlResponse.Data = "error"
+	c.JSON(http.StatusOK, sqlResponse)
+	fmt.Println("删除成功...")
+	fmt.Println(ret.LastInsertId())
+	c.Abort()
+
+}
+
+func updateData2(c *gin.Context) {
 	var u SqlUser
 	err := c.Bind(&u)
 	if err != nil {
@@ -89,18 +125,20 @@ func updateData(c *gin.Context) {
 	sqlResponse.Message = "更新成功..."
 	sqlResponse.Data = "OK"
 	c.JSON(http.StatusOK, sqlResponse)
+	fmt.Println("更新成功...")
+	fmt.Println(ret.LastInsertId())
 	c.Abort()
 	return
 }
 
-func getMulData(c *gin.Context) {
+func getMulData2(c *gin.Context) {
 	address := c.Query("address")
 	sqlStr := "SELECT name, age FROM user WHERE address = ?"
 	rows, err := sqlDb.Query(sqlStr, address)
 	if err != nil {
 		sqlResponse.Code = http.StatusBadRequest
 		sqlResponse.Message = "查询失败..."
-		sqlResponse.Data = "ERROR！！！"
+		sqlResponse.Data = "ERROR!!!"
 		c.JSON(http.StatusOK, sqlResponse)
 		c.Abort()
 		return
@@ -122,7 +160,7 @@ func getMulData(c *gin.Context) {
 
 }
 
-func getData(c *gin.Context) {
+func getData2(c *gin.Context) {
 	name := c.Query("name")
 	sqlStr := "SELECT age, address FROM user WHERE name = ?"
 	var u SqlUser
@@ -130,7 +168,7 @@ func getData(c *gin.Context) {
 	if err != nil {
 		sqlResponse.Code = http.StatusBadRequest
 		sqlResponse.Message = "查询失败..."
-		sqlResponse.Data = "ERROR！！！"
+		sqlResponse.Data = "ERROR!!!"
 		c.JSON(http.StatusOK, sqlResponse)
 		c.Abort()
 		return
@@ -142,13 +180,14 @@ func getData(c *gin.Context) {
 	c.JSON(http.StatusOK, sqlResponse)
 }
 
-func insertData(c *gin.Context) {
+func insertData2(c *gin.Context) {
 	var u SqlUser
+	// ===== 如果有需要的话可以添加参数校验 =====
 	err := c.Bind(&u)
 	if err != nil {
 		sqlResponse.Code = http.StatusBadRequest
 		sqlResponse.Message = "参数错误..."
-		sqlResponse.Data = "error"
+		sqlResponse.Data = "ERROR!!!"
 		c.JSON(http.StatusOK, sqlResponse)
 		c.Abort()
 		return
@@ -159,14 +198,14 @@ func insertData(c *gin.Context) {
 		fmt.Printf("INSERT FAILED, ERROR: %v/n\n", err)
 		sqlResponse.Code = http.StatusBadRequest
 		sqlResponse.Message = "写入数据库失败..."
-		sqlResponse.Data = "ERROR！！！"
+		sqlResponse.Data = "ERROR!!!"
 		c.JSON(http.StatusOK, sqlResponse)
 		c.Abort()
 		return
 	}
 	sqlResponse.Code = http.StatusOK
 	sqlResponse.Message = "写入数据库成功..."
-	sqlResponse.Data = "OK！！！"
+	sqlResponse.Data = "OK!!!"
 	c.JSON(http.StatusOK, sqlResponse)
 	fmt.Println(ret.LastInsertId()) // 打印输出结果
 }
