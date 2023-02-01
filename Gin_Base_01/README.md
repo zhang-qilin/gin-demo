@@ -2169,7 +2169,7 @@ func authMiddleware2() gin.HandlerFunc {
 }
 ```
 
-## 二十四、日志框架logrus_1
+## 二十四、日志记录-日志框架logrus_1
 
 开发的服务端代码总会出现未知的错误，那么排错以及维护就是服务端开发重要且必不可少的一部分。
 
@@ -2284,7 +2284,7 @@ func main() {
 
 
 
-## 二十五、日志框架logrus_2
+## 二十五、日志记录-日志框架logrus_2
 
 在Gin框架中如何使用日志框架Logrus的一些复杂功能，比如：设置保存最大保存时间、设置日志切割时间间隔等？
 
@@ -2427,7 +2427,7 @@ func logMiddleware() gin.HandlerFunc {
 
 ```
 
-## 二十六、原生数据库使用_1
+## 二十六、数据库-原生数据库使用_1
 
 Client提交的数据在server永久保存。
 
@@ -2587,7 +2587,7 @@ func insertData(c *gin.Context) {
 
 ```
 
-## 二十七、原生数据库使用_2
+## 二十七、数据库-原生数据库使用_2
 
 #### 核心代码
 
@@ -2815,11 +2815,73 @@ func insertData2(c *gin.Context) {
 
 
 
-## 二十八、
+## 二十八、数据库-ORM框架XORM_1
+
+经常操作复杂的SQL会感觉到很繁琐。ORM，即Object-Relationl Mapping。
+
+它的作用就是在关系型数据库和对象之间做一个映射，这样我们在具体操纵数据库的时候，就不需要再去和复炸的SQL语句打交道，只要像平时操作对象一样操作它就可以了。
+
+比较好的Go语言ORM包括：XORM与GORM
+
+XORM是一个简单而强大的Go语言ORM库，通过它可以使数据库操作变得非常简单。
+
+#### 核心代码
+
+XROM使用：
+
+1、添加依赖
+
+```bash
+go get github.com/go-xorm/xorm
+```
+
+2、连接数据库
+
+```go
+// 创建引擎
+engine, err := xorm.NewEngine(driverName, dataSourceName)
+// 连接
+// 定义一个和表同步的结构体，并且自动同步结构体到数据库
+type User truct {
+    Id int64
+    Name string
+    Age int
+}
+err := engine.Sync2(New(User))
+```
+
+3、执行
+
+```go
+engine.Get(&user)
+engine.Insert(&user)
+engine.ID(1).Update(&user)
+engine.ID(2).Delete(&user)
+```
 
 
 
+## 二十九、数据库-ORM框架XORM_2
 
+## 三十、数据库-ORM框架GORM_1
+
+## 三十一、数据库-ORM框架GORM_2
+
+## 三十二、Tocken-HMAC签名方法实现
+
+## 三十三、Tocken-RSA签名方法实现
+
+## 三十四、Tocken-ECDSA签名方法实现
+
+## 三十五、配置文件管理
+
+## 三十六、接口
+
+## 三十七、路由、中间件
+
+## 三十八、核心功能实现
+
+## 三十九、前后端联调、部署、Nginx部署
 
 
 
