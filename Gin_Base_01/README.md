@@ -3184,6 +3184,41 @@ func main() {
 
 ## 三十、数据库-ORM框架GORM_1
 
+GORM也是一款非常优秀的Go语言框架。
+
+#### 核心代码
+
+1、获取框架包
+
+```bash
+go get -u gorm.io/gorm
+go get -u gorm.io/driver/sqlite
+```
+
+2、连接数据库
+
+```go
+gorm.Open(mysql.Open(sqlStr),&gorm.Config{})
+```
+
+3、操作数据库
+
+```go
+db.Create(p)
+db.Where(p.ID).Delete(P{})
+db.Where("id = ?", p.ID).Find(&p)
+db.Model(&p).Where("Number",p.Number).Updates(&p)
+```
+
+
+
+Demo
+
+```go
+```
+
+
+
 ## 三十一、数据库-ORM框架GORM_2
 
 ## 三十二、Tocken-HMAC签名方法实现
