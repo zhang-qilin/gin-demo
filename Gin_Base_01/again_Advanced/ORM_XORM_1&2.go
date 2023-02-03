@@ -19,7 +19,7 @@ import (
 var x *xorm.Engine
 var xormResponse XormResponse
 
-// Stu 定义结构体(XROM支持双向映射)：没有表，会进行创建【结构体名称必须与表名称一致】
+// Stu 定义结构体(XORM支持双向映射)：没有表，会进行创建【结构体名称必须与表名称一致】
 type Stu struct {
 	Id      int64     `xorm:"pk autoincr" json:"id"` // 指定主键并自增
 	StuNum  string    `xorm:"unique" json:"stu_num"` // 设置唯一值
