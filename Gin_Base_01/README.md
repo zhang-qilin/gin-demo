@@ -3719,11 +3719,49 @@ func gormInsertData(c *gin.Context) {
 
 
 
-## 三十二、Tocken-HMAC签名方法实现
+## 三十二、Token-HMAC签名方法实现
 
-## 三十三、Tocken-RSA签名方法实现
+Cookie数据存放在客户端，Session数据存放在服务器上；
 
-## 三十四、Tocken-ECDSA签名方法实现
+Cookie不是很安全，别人可以分析存放在本地的Cookie并进行Cookie欺骗，而且保存数据有限；
+
+Session一定时间内保存在服务器上，当访问增多，占用服务器资源。
+
+针对疑似的情况我们引入了`Token`
+
+Token：令牌，是用户身份的验证方式。
+
+最简单的Token组成：UUID(用户唯一的身份标识)、Time(当前时间的时间戳)、Sign(签名)
+
+Token和Session其实都是为了身份证明，Session一般翻译为会话，而Token更多的时候翻译为令牌。
+
+Session服务器会保存一份，可能保存到缓存、文件、数据库、Session是空间换时间，而Token是时间换空间，两者的选择要看具体情况而定。
+
+虽然确实都是“客户端记录，每次访问携带”，但是Token容易设计为自包含的，也就是说，后端不需要记录什么东西，每次一个无状态请求，每次解密验证，每次当初得合法/非法得结论。这一切判断依据，除了固化在CS两端得一些逻辑之外，整个信息是自包含的。这才是真正的无状态。
+
+而SessionID，一般都是一段随机字符串，需要到后端去检索ID的有效性。万一服务器重启导致内存里的Session没了呢？？？
+
+jwt-go：A go implementation of JSON Web Tokens
+
+签名方法和Key类型：
+
+Then HMAC sinning method(HS256,HS384,HS512)  // hash 消息认证码
+
+Then RSA signing method(RS256,RS384,RS512)  // RSA 非对称加密签名
+
+Then ECDSA signing method(ES256,ES384,ES512)   //  椭圆曲线数字签名
+
+
+
+官方文档地址：https://github.com/dgrijalva/jwt-go
+
+
+
+
+
+## 三十三、Token-RSA签名方法实现
+
+## 三十四、Token-ECDSA签名方法实现
 
 ## 三十五、配置文件管理
 
