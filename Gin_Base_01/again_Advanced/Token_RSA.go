@@ -50,12 +50,73 @@ func init() {
 	}
 }
 
-func main() {
+// 生成Token
+func rsaJwtTokenGen(id string) (any, error) {
+	PrivateKey, err := jwt.ParseRSAPrivateKeyFromPEM(resPrivateKey) // 通过RSA私钥签名
+	if err != nil {
+		return nil, err
+	}
+	//
+	claims := &RsaClaims{
+		UserId: id,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:  "张齐林",        // 发布者
+			Subject: "user token", // 主题
+			// Audience:  nil,
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)), // 设置过期时间，截止时间：从当前时间计算：7天
+			NotBefore: jwt.NewNumericDate(time.Now()),                         // 生效时间
+			IssuedAt:  jwt.NewNumericDate(time.Now()),                         // 发布时间
+			// ID:        "",
+		},
+	}
+	// 生成Token
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	// 对Token进行加密(签名)
+	signedString, err := token.SignedString(PrivateKey)
+	return signedString, err
+}
 
-	r := gin.Default()
-	r.POST("/getToken2", getToken2)
-	r.POST("/checkToken2", rsaTokenMiddle, checkToken2)
-	r.Run(":9090")
+// 颁发Token
+func rsaReleaseToken(u RsaUser) (any, error) {
+	// 获取Token
+	tokenGen, err := rsaJwtTokenGen(u.Id)
+	return tokenGen, err
+}
+
+func getToken2(c *gin.Context) {
+	u := RsaUser{}
+	err := c.Bind(&u)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "参数错误")
+		return
+	}
+	token, err := rsaReleaseToken(u)
+	if err != nil {
+		c.JSON(http.StatusOK, "生成Token失败")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "msg": "Token颁发成功", "data": token})
+
+}
+
+// 解析Token
+func rsaJwtTokenRead(tokenString string) (any, error) {
+	// 先获取私钥
+	pem, err := jwt.ParseRSAPublicKeyFromPEM(resPublicKey)
+	if err != nil {
+		return nil, err
+	}
+	// 解析Token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("解析的方法错误")
+		}
+		return pem, err
+	})
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid && token != nil {
+		return claims, nil
+	}
+	return nil, err
 
 }
 
@@ -102,78 +163,17 @@ func rsaTokenMiddle(c *gin.Context) {
 	c.Next()
 }
 
-// 解析Token
-func rsaJwtTokenRead(tokenString string) (any, error) {
-	// 先获取私钥
-	pem, err := jwt.ParseRSAPublicKeyFromPEM(resPublicKey)
-	if err != nil {
-		return nil, err
-	}
-	// 解析Token
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("解析的方法错误")
-		}
-		return pem, err
-	})
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid && token != nil {
-		return claims, nil
-	}
-	return nil, err
-
-}
-
 func checkToken2(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "msg": "验证通过"})
 }
 
-func getToken2(c *gin.Context) {
-	u := RsaUser{}
-	err := c.Bind(&u)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, "参数错误")
-		return
-	}
-	token, err := rsaReleaseToken(u)
-	if err != nil {
-		c.JSON(http.StatusOK, "生成Token失败")
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "msg": "Token颁发成功", "data": token})
+func main() {
 
-}
+	r := gin.Default()
+	r.POST("/getToken2", getToken2)
+	r.POST("/checkToken2", rsaTokenMiddle, checkToken2)
+	r.Run(":9090")
 
-// 颁发Token
-func rsaReleaseToken(u RsaUser) (any, error) {
-	// 获取Token
-	tokenGen, err := rsaJwtTokenGen(u.Id)
-	return tokenGen, err
-}
-
-// 生成Token
-func rsaJwtTokenGen(id string) (any, error) {
-	PrivateKey, err := jwt.ParseRSAPrivateKeyFromPEM(resPrivateKey) // 通过RSA私钥签名
-	if err != nil {
-		return nil, err
-	}
-	//
-	claims := &RsaClaims{
-		UserId: id,
-		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:  "张齐林",        // 发布者
-			Subject: "user token", // 主题
-			// Audience:  nil,
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)), // 设置过期时间，截止时间：从当前时间计算：7天
-			NotBefore: jwt.NewNumericDate(time.Now()),                         // 生效时间
-			IssuedAt:  jwt.NewNumericDate(time.Now()),                         // 发布时间
-			// ID:        "",
-		},
-	}
-	// 生成Token
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	// 对Token进行加密(签名)
-	signedString, err := token.SignedString(PrivateKey)
-	return signedString, err
 }
 
 // TODO: RSA密钥生成工具：http://www.metools.info/code/c80.html
