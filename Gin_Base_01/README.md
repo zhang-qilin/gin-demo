@@ -3182,7 +3182,7 @@ func main() {
 
 
 
-## 三十、数据库-ORM框架GORM_1
+## 三十、数据库-GRM框架GORM_1
 
 GORM也是一款非常优秀的Go语言框架。
 
@@ -4309,6 +4309,145 @@ func main() {
 ```
 
 ## 三十五、配置文件管理
+
+1. Gin框架在项目中的应用(包括项目结构)
+2. Gin框架实现前后端分离
+3. Gin框架与前端联调
+
+针对以上三点的技术要点：
+
+- 项目结构、配置信息管理
+- 认证：Token的使用
+- 密码的存储
+- 跨域的设置
+- 前后端的联调
+
+#### 核心代码
+
+```go
+// 运用到了
+```
+
+Demo
+
+./main.go
+
+```go
+/*
+* @Time ： 2023-02-05 16:34
+* @Auth ： 张齐林
+* @File ：main.go
+* @IDE ：GoLand
+ */
+package main
+
+import (
+	"gin_applocation/common"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
+)
+
+func main() {
+	gin.SetMode(gin.ReleaseMode)
+	InintConfig()
+	common.InitDB()
+	r := gin.Default()
+	port := viper.GetString("server.port")
+	r.GET("/test")
+	r.Run(":" + port)
+}
+
+func InintConfig() {
+	workDir, _ := os.Getwd()                 // 获取目录对应的路径
+	viper.SetConfigName("application")       // 配置文件名
+	viper.SetConfigType("yaml")              // 配置文件类型
+	viper.AddConfigPath(workDir + "/config") // 执行go run 对应的路径配置
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(err)
+		return
+	}
+}
+
+```
+
+./common/databases.go
+
+```go
+/*
+* @Time ： 2023-02-05 16:51
+* @Auth ： 张齐林
+* @File ：database.go
+* @IDE ：GoLand
+ */
+package common
+
+import (
+	"fmt"
+	"net/url"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/spf13/viper"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+)
+
+var DB *gorm.DB
+
+func InitDB() *gorm.DB {
+	hots := viper.GetString("datasource.host")
+	port := viper.GetString("datasource.port")
+	// dirverName := viper.GetString("datasource.dirverName")
+	databases := viper.GetString("datasource.databases")
+	username := viper.GetString("datasource.username")
+	password := viper.GetString("datasource.password")
+	charset := viper.GetString("datasource.charset")
+	loc := viper.GetString("datasource.loc")
+	args := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=true&loc=%s",
+		username,
+		password,
+		hots,
+		port,
+		databases,
+		charset,
+		url.QueryEscape(loc))
+	fmt.Println(args)
+	db, err := gorm.Open(mysql.Open(args), &gorm.Config{})
+	if err != nil {
+		fmt.Println(err)
+		panic("Failed To Connect database, err: " + err.Error())
+	}
+	DB = db
+	return db
+}
+
+```
+
+./config/application.yml
+
+```yaml
+server:
+  port: 9988
+datasource:
+  host: 127.0.0.1
+  port: 3306
+  dirverName: mysql
+  databases: gindb
+  username: root
+  password: 123456
+  charset: utf8mb4
+  loc: Asia/Shanghai
+```
+
+
+
+
+
+
+
+
 
 ## 三十六、接口
 
