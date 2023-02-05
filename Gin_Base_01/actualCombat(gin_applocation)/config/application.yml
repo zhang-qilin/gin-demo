@@ -1,0 +1,11 @@
+server:
+  port: 9988
+datasource:
+  host: 127.0.0.1
+  port: 3306
+  dirverName: mysql
+  databases: gindb
+  username: root
+  password: 123456
+  charset: utf8mb4
+  loc: Asia/Shanghai
