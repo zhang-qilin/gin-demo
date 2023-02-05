@@ -81,7 +81,7 @@ func hmacAuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		// 获取真正的Token值
+		// 获取Token的下标
 		index := strings.Index(tokenString, auth+":") // 找到Token前缀对应的位置
 		// 提取到真正的Token的值
 		tokenString = tokenString[index+len(auth)+1:] // 真正的Token 的开始位置为：索引开始的位置+关键字的的长度(:的长度为1)
