@@ -40,27 +40,31 @@ func main() {
 
 	r := gin.Default()
 	// Token的分发
-	r.POST("/getToken1", func(c *gin.Context) {
-		var u HmacUser
-		c.Bind(&u)
-		token, err := hmacReleaseToken(u)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, err)
-			fmt.Println("Token生成失败...")
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"code": http.StatusOK,
-			"msg":  "token分发成功...",
-			"data": token,
-		})
-	})
+	r.POST("/getToken1", getToken1)
 	// Token的认证
-	r.POST("/checkToken1", hmacAuthMiddleware(), func(c *gin.Context) {
-		c.JSON(http.StatusOK, "验证成功")
-	})
+	r.POST("/checkToken1", hmacAuthMiddleware(), checkToken1)
 	r.Run(":9090")
 
+}
+
+func getToken1(c *gin.Context) {
+	var u HmacUser
+	c.Bind(&u)
+	token, err := hmacReleaseToken(u)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		fmt.Println("Token生成失败...")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": http.StatusOK,
+		"msg":  "token分发成功...",
+		"data": token,
+	})
+}
+
+func checkToken1(c *gin.Context) {
+	c.JSON(http.StatusOK, "验证成功")
 }
 
 func hmacAuthMiddleware() gin.HandlerFunc {
@@ -77,7 +81,7 @@ func hmacAuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		// 获取正在的Token值
+		// 获取真正的Token值
 		index := strings.Index(tokenString, auth+":") // 找到Token前缀对应的位置
 		// 提取到真正的Token的值
 		tokenString = tokenString[index+len(auth)+1:] // 真正的Token 的开始位置为：索引开始的位置+关键字的的长度(:的长度为1)
