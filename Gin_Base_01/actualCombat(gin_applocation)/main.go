@@ -8,6 +8,7 @@ package main
 
 import (
 	"gin_applocation/common"
+	"gin_applocation/route"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -19,9 +20,13 @@ func main() {
 	InintConfig()
 	common.InitDB()
 	r := gin.Default()
+	r = route.CollectRoute(r)
 	port := viper.GetString("server.port")
-	r.GET("/test")
-	r.Run(":" + port)
+	if port != "" {
+		r.Run(":" + port)
+	} else {
+		r.Run() // 默认端口号:8080
+	}
 }
 
 func InintConfig() {
