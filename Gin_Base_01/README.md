@@ -3799,7 +3799,7 @@ type HmacUser struct {
 type MyClaims struct {
 	UserId string
 	// jwt.StandardClaims
-	jwt.RegisteredClaims // 注意这是Google-jwt的v4版本新增的，原先(https://github.com/dgrijalva/jwt-go)是jwt.StandardClaims
+	jwt.RegisteredClaims // 注意这是Golang-jwt的v4版本新增的，原先(https://github.com/dgrijalva/jwt-go)是jwt.StandardClaims
 }
 
 func main() {
@@ -3893,8 +3893,8 @@ func hmacReleaseToken(u HmacUser) (string, error) {
 			// IssuedAt: time.Now().Unix(),                // 发布时间  【使用github.com/dgrijalva/jwt-go的jwt-go直接使用这种方法即可】
 			// NotBefore: nil,                             // 生效时间
 			IssuedAt:  jwt.NewNumericDate(time.Now()),     // 发布时间
-			NotBefore: jwt.NewNumericDate(time.Now()),     // 生效时间 【使用Google-jwt的v4版本直接使用这种方法即可】
-			ExpiresAt: jwt.NewNumericDate(expirationTime), // 设置过期时间【使用Google-jwt的v4版本直接使用这种方法即可】
+			NotBefore: jwt.NewNumericDate(time.Now()),     // 生效时间 【使用Golang-jwt的v4版本直接使用这种方法即可】
+			ExpiresAt: jwt.NewNumericDate(expirationTime), // 设置过期时间【使用Golang-jwt的v4版本直接使用这种方法即可】
 		},
 	}
 	// 生成Token
@@ -3959,7 +3959,7 @@ type RsaUser struct {
 type RsaClaims struct {
 	UserId string `json:"user_id"`
 	// jwt.StandardClaims
-	jwt.RegisteredClaims // 注意这是Google-jwt的v4版本新增的，原先(https://github.com/dgrijalva/jwt-go)是jwt.StandardClaims
+	jwt.RegisteredClaims // 注意这是Golang-jwt的v4版本新增的，原先(https://github.com/dgrijalva/jwt-go)是jwt.StandardClaims
 }
 
 func init() {
@@ -4155,7 +4155,7 @@ type EcdsaUsre struct {
 type EcdsaClaims struct {
 	UserId string `json:"user_id"`
 	// jwt.StandardClaims
-	jwt.RegisteredClaims // 注意这是Google-jwt的v4版本新增的，原先(https://github.com/dgrijalva/jwt-go)是jwt.StandardClaims
+	jwt.RegisteredClaims // 注意这是Golang-jwt的v4版本新增的，原先(https://github.com/dgrijalva/jwt-go)是jwt.StandardClaims
 }
 
 func init() {
