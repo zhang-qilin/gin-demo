@@ -73,7 +73,7 @@ func Register(ctx *gin.Context) {
 func Login(ctx *gin.Context) {
 	var requestUser model.User
 	ctx.Bind(&requestUser)
-	name := requestUser.Name
+	// name := requestUser.Name
 	telephone := requestUser.Telephone
 	password := requestUser.Password
 	// 数据验证
@@ -106,7 +106,7 @@ func Login(ctx *gin.Context) {
 		return
 	}
 	// 放回结果
-	response.Success(ctx, gin.H{"token": token}, "注册成功")
+	response.Success(ctx, gin.H{"token": token}, "登录成功")
 }
 
 func Info(ctx *gin.Context) {
