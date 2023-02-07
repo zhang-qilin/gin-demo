@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CpllectRoute(r *gin.Engine) *gin.Engine {
+func CollectRoute(r *gin.Engine) *gin.Engine {
 	r.Use(middleware.CORSMiddleware(), middleware.RecoverMiddleware())
 	r.POST("/api/auth/register", controller.Register)                     // 注册
 	r.POST("/api/auth/login", controller.Login)                           // 登录
