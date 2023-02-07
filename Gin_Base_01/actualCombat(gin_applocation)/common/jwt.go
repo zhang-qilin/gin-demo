@@ -16,7 +16,7 @@ import (
 var jwtKey = []byte("a_secret_key")
 
 type Claims struct {
-	UserId string
+	UserId uint
 	// jwt.StandardClaims
 	jwt.RegisteredClaims // 注意这是Google-jwt的v4版本新增的，原先(https://github.com/dgrijalva/jwt-go)是jwt.StandardClaims
 }
@@ -26,7 +26,7 @@ func ReleaseToken(u model.User) (string, error) {
 	// 获取当前的时间，来处理Token的时效性
 	expirationTime := time.Now().Add(7 * 24 * time.Hour) // 截止时间：从当前时刻算起，7天
 	claims := &Claims{
-		UserId: u.Telephone,
+		UserId: u.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:  "zhangqilin", // Token发布者
 			Subject: "user token", // 设置主题
