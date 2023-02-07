@@ -10,7 +10,7 @@ import (
 	"gin_applocation/common"
 	"gin_applocation/route"
 	"os"
-
+thu
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
