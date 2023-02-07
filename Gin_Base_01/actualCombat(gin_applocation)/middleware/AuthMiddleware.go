@@ -8,6 +8,7 @@
 package middleware
 
 import (
+	"fmt"
 	"gin_applocation/common"
 	"gin_applocation/model"
 	"net/http"
@@ -43,6 +44,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 		// 验证通过后获取claim中的userId
 		userId := claims.UserId
+		fmt.Println(claims.ID)
+		fmt.Println(userId)
 		// 判定
 		var user model.User
 		common.DB.First(&user, userId)

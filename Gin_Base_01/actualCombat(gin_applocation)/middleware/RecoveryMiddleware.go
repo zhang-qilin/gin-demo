@@ -21,7 +21,7 @@ func RecoverMiddleware() gin.HandlerFunc {
 		defer func() {
 			// 主要是用于获取错误
 			if err := recover(); err != nil {
-				response.Fail(c, nil, fmt.Sprintf(err))
+				response.Fail(c, nil, fmt.Sprint(err))
 				c.Abort()
 				return
 			}
