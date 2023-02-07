@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	gin.SetMode(gin.ReleaseMode)
+	// gin.SetMode(gin.ReleaseMode)
 	InintConfig()
 	common.InitDB()
 	r := gin.Default()
